@@ -9,11 +9,8 @@ var createTask = function(taskText, taskDate, taskList) {
   var taskP = $("<p>")
     .addClass("m-1")
     .text(taskText);
-
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
-
-
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
 };
@@ -30,7 +27,6 @@ var loadTasks = function() {
       done: []
     };
   }
-
   // loop over object properties
   $.each(tasks, function(list, arr) {
     console.log(list, arr);
@@ -79,12 +75,10 @@ $(".card .list-group").sortable({
             .trim()
         });
       });
-
     // trim down list's ID to match object property
     var arrName = $(this)
       .attr("id")
       .replace("list-", "");
-
     // update array on tasks object and save
     tasks[arrName] = tempArr;
     saveTasks();
@@ -94,10 +88,6 @@ $(".card .list-group").sortable({
   }
 });
 
-
-
-
-
 // trash icon can be dropped onto
 $("#trash").droppable({
   accept: ".card .list-group-item",
@@ -105,7 +95,6 @@ $("#trash").droppable({
   drop: function(event, ui) {
     // remove dragged element from the dom
     ui.draggable.remove();
-
   },
   over: function(event, ui) {
     console.log(ui);
@@ -115,11 +104,14 @@ $("#trash").droppable({
   }
 });
 
-
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
   // clear values
   $("#modalTaskDescription, #modalDueDate").val("");
+});
+
+$("#modalDueDate").datepicker({
+  minDate: 1
 });
 
 // modal is fully visible
@@ -133,19 +125,15 @@ $("#task-form-modal .btn-primary").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
-
   if (taskText && taskDate) {
     createTask(taskText, taskDate, "toDo");
-
     // close modal
     $("#task-form-modal").modal("hide");
-
     // save in tasks array
     tasks.toDo.push({
       text: taskText,
       date: taskDate
     });
-
     saveTasks();
   }
 });
@@ -156,11 +144,9 @@ $(".list-group").on("click", "p", function() {
   var text = $(this)
     .text()
     .trim();
-
   // replace p element with a new textarea
   var textInput = $("<textarea>").addClass("form-control").val(text);
   $(this).replaceWith(textInput);
-
   // auto focus new element
   textInput.trigger("focus");
 });
@@ -169,7 +155,6 @@ $(".list-group").on("click", "p", function() {
 $(".list-group").on("blur", "textarea", function() {
   // get current value of textarea
   var text = $(this).val();
-
   // get status type and position in the list
   var status = $(this)
     .closest(".list-group")
@@ -178,16 +163,13 @@ $(".list-group").on("blur", "textarea", function() {
   var index = $(this)
     .closest(".list-group-item")
     .index();
-
   // update task in array and re-save to localstorage
   tasks[status][index].text = text;
   saveTasks();
-
   // recreate p element
   var taskP = $("<p>")
     .addClass("m-1")
     .text(text);
-
   // replace textarea with new content
   $(this).replaceWith(taskP);
 });
@@ -198,22 +180,28 @@ $(".list-group").on("click", "span", function() {
   var date = $(this)
     .text()
     .trim();
-
   // create new input element
   var dateInput = $("<input>")
     .attr("type", "text")
     .addClass("form-control")
     .val(date);
   $(this).replaceWith(dateInput);
-
   // automatically bring up the calendar
-  dateInput.trigger("focus");
+  dateInput.datepicker({
+    minDate: 1, 
+    onClose: function(){
+      // when calendar is closed, force a "change" event on the "dateInput"
+      $(this).trigger("change");
+    }
+  });
+
+// automatically bring up the calendar
+dateInput.trigger("focus");
 });
 
 // value of due date was changed
 $(".list-group").on("change", "input[type='text']", function() {
   var date = $(this).val();
-
   // get status type and position in the list
   var status = $(this)
     .closest(".list-group")
@@ -222,11 +210,9 @@ $(".list-group").on("change", "input[type='text']", function() {
   var index = $(this)
     .closest(".list-group-item")
     .index();
-
   // update task in array and re-save to localstorage
   tasks[status][index].date = date;
   saveTasks();
-
   // recreate span and insert in place of input element
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
